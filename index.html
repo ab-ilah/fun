@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Will You Be Mine? 💍</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Lato:wght@300;400&family=Pacifico&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Lato', sans-serif;
+      background: #fff0f4;
+      min-height: 100vh;
+    }
+
+    .pw { 
+      font-family: 'Lato', sans-serif; 
+      background: #fff0f4; 
+      min-height: 100vh; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: center; 
+      padding: 2rem 1.5rem; 
+      position: relative; 
+      overflow: hidden;
+    }
+
+    .petals-bg { 
+      position: absolute; 
+      inset: 0; 
+      pointer-events: none; 
+      overflow: hidden; 
+    }
+
+    .petal { 
+      position: absolute; 
+      border-radius: 50% 0; 
+      animation: fall linear infinite; 
+    }
+
+    @keyframes fall { 
+      0%{transform:translateY(-20px) rotate(0deg);opacity:.6} 
+      100%{transform:translateY(100vh) rotate(360deg);opacity:0} 
+    }
+
+    .screen { 
+      display: none; 
+      flex-direction: column; 
+      align-items: center; 
+      text-align: center; 
+      max-width: 500px; 
+      width: 100%; 
+      animation: fadeIn 0.5s ease; 
+      position: relative; 
+      z-index: 2;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 2.5rem;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    .screen.active { display: flex; }
+
+    @keyframes fadeIn { 
+      from{opacity:0;transform:translateY(12px)} 
+      to{opacity:1;transform:translateY(0)} 
+    }
+
+    .eyebrow { 
+      font-size: 11px; 
+      letter-spacing: 3px; 
+      color: #a0335a; 
+      text-transform: uppercase; 
+      margin-bottom: 10px; 
+    }
+
+    .big-title { 
+      font-family: 'Playfair Display', serif; 
+      font-size: 34px; 
+      color: #5c1a35; 
+      line-height: 1.25; 
+      margin: 15px 0; 
+    }
+
+    .big-title em { font-style: italic; }
+
+    .subtitle { 
+      font-size: 14px; 
+      color: #8a4060; 
+      line-height: 1.8; 
+      margin: 0 0 1.75rem; 
+      font-weight: 300; 
+    }
+
+    .ring-icon { 
+      font-size: 50px; 
+      margin-bottom: 1rem; 
+      animation: pulse 2s ease-in-out infinite; 
+    }
+
+    @keyframes pulse { 
+      0%,100%{transform:scale(1)} 
+      50%{transform:scale(1.08)} 
+    }
+
+    /* LOCKED SCREEN */
+    .lock-icon { font-size: 60px; margin-bottom: 1rem; }
+
+    .code-input {
+      width: 100%;
+      padding: 12px 14px;
+      font-size: 16px;
+      font-family: 'Lato', sans-serif;
+      border: 2px solid #e8a0b8;
+      border-radius: 8px;
+      text-align: center;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #5c1a35;
+      background: #ffffff;
+      outline: none;
+      transition: all 0.3s ease;
+      margin-bottom: 1rem;
+    }
+
+    .code-input:focus {
+      border-color: #b5274d;
+      box-shadow: 0 0 10px rgba(181, 39, 77, 0.2);
+    }
+
+    .code-error {
+      color: #d63031;
+      font-size: 12px;
+      margin-top: -0.75rem;
+      margin-bottom: 0.75rem;
+      display: none;
+    }
+
+    .code-error.show {
+      display: block;
+    }
+
+    /* LETTER SEAL */
+    .letter-seal {
+      width: 220px;
+      height: 140px;
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border: 3px solid #fbbf24;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 2rem auto;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      transform: perspective(1200px) rotateY(0deg);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      position: relative;
+      transform-style: preserve-3d;
+    }
+
+    .letter-seal:hover {
+      transform: perspective(1200px) rotateY(-15deg) scale(1.05);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+    }
+
+    .letter-seal.opening {
+      animation: envelopeFlip 0.6s ease-in-out forwards;
+    }
+
+    @keyframes envelopeFlip {
+      0% { transform: perspective(1200px) rotateY(0deg); opacity: 1; }
+      50% { transform: perspective(1200px) rotateY(90deg); }
+      100% { transform: perspective(1200px) rotateY(180deg); opacity: 0; }
+    }
+
+    .letter-seal .heart {
+      font-size: 50px;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    }
+
+    .letter-seal .hint {
+      position: absolute;
+      bottom: 6px;
+      font-size: 10px;
+      color: #b45309;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    /* BUTTONS */
+    .btn-yes, .btn-maybe {
+      display: inline-block;
+      background-color: #fff0f4;
+      color: #5c1a35 !important;
+      border: 3px solid #b5274d;
+      border-radius: 40px;
+      font-family: 'Lato', sans-serif;
+      font-weight: 400;
+      cursor: pointer;
+      line-height: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      transition: all 0.3s ease;
+    }
+
+    .btn-yes { 
+      padding: 14px 38px; 
+      font-size: 16px; 
+    }
+
+    .btn-maybe { 
+      padding: 13px 28px; 
+      font-size: 15px; 
+    }
+
+    .btn-yes:hover, .btn-maybe:hover { 
+      background-color: #f29fb7; 
+      border-color: #961f40; 
+    }
+
+    .submit-btn {
+      display: block;
+      width: 100%;
+      background-color: #b5274d;
+      color: #ffffff !important;
+      border: 3px solid #b5274d;
+      padding: 16px 0;
+      border-radius: 40px;
+      font-size: 16px;
+      font-family: 'Lato', sans-serif;
+      font-weight: 400;
+      cursor: pointer;
+      margin-top: 10px;
+      line-height: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .submit-btn:hover { 
+      background-color: #961f40; 
+      border-color: #961f40; 
+    }
+
+    .submit-btn.muted { 
+      background-color: #9a6070; 
+      border-color: #9a6070; 
+    }
+
+    .submit-btn.muted:hover { 
+      background-color: #7d4d5c; 
+      border-color: #7d4d5c; 
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .unlock-btn {
+      display: block;
+      width: 100%;
+      background-color: #b5274d;
+      color: white !important;
+      border: 3px solid #b5274d;
+      padding: 12px 0;
+      border-radius: 40px;
+      font-size: 14px;
+      font-family: 'Lato', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .unlock-btn:hover {
+      background-color: #961f40;
+    }
+
+    .back-btn {
+      background: none;
+      border: none;
+      color: #a0335a;
+      font-size: 13px;
+      font-family: 'Lato', sans-serif;
+      cursor: pointer;
+      padding: 4px 0;
+      margin-bottom: 1rem;
+      align-self: flex-start;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      transition: color 0.3s ease;
+    }
+
+    .back-btn:hover { color: #5c1a35; }
+
+    .btn-row { 
+      display: flex; 
+      gap: 14px; 
+      justify-content: center; 
+      flex-wrap: wrap; 
+    }
+
+    .section-label { 
+      font-size: 11px; 
+      letter-spacing: 2px; 
+      color: #a0335a; 
+      text-transform: uppercase; 
+      margin: 1.2rem 0 8px; 
+      align-self: flex-start; 
+    }
+
+    .input-field { 
+      width: 100%; 
+      border: 2px solid #e8a0b8; 
+      border-radius: 8px; 
+      padding: 10px 14px; 
+      font-size: 14px; 
+      font-family: 'Lato', sans-serif; 
+      color: #5c1a35; 
+      background: #ffffff; 
+      resize: vertical;
+      min-height: 80px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .input-field:focus { 
+      border-color: #b5274d;
+      box-shadow: 0 0 10px rgba(181, 39, 77, 0.1);
+    }
+
+    .badge { 
+      display: inline-block; 
+      background: #fcd5e0; 
+      color: #961f40; 
+      font-size: 11px; 
+      padding: 5px 16px; 
+      border-radius: 20px; 
+      letter-spacing: 1px; 
+      margin-bottom: 1.25rem; 
+      border: 1px solid #f0a0b8; 
+    }
+
+    .gentle-note { 
+      font-size: 13px; 
+      color: #a07080; 
+      font-style: italic; 
+      margin-top: 0.75rem; 
+      line-height: 1.6; 
+    }
+
+    .hearts-rain { 
+      position: absolute; 
+      inset: 0; 
+      pointer-events: none; 
+      overflow: hidden; 
+      z-index: 1; 
+    }
+
+    .heart-p { 
+      position: absolute; 
+      font-size: 20px; 
+      animation: floatUp 2.5s ease-out forwards; 
+    }
+
+    @keyframes floatUp { 
+      0%{transform:translateY(100%) scale(0.5);opacity:1} 
+      100%{transform:translateY(-80px) scale(1.2);opacity:0} 
+    }
+
+    .final-msg { 
+      font-family: 'Playfair Display', serif; 
+      font-size: 19px; 
+      color: #5c1a35; 
+      font-style: italic; 
+      line-height: 1.65; 
+    }
+
+    .sig { 
+      font-size: 13px; 
+      color: #a07080; 
+      margin-top: 1.5rem; 
+      font-style: italic; 
+    }
+
+    .handwritten {
+      font-family: 'Pacifico', cursive;
+      font-size: 18px;
+      color: #5c1a35;
+      font-weight: 400;
+    }
+
+    .center-back { 
+      align-self: center; 
+      margin-top: 1.25rem; 
+    }
+
+    .success-message {
+      display: none;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #10b981;
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(400px); }
+      to { transform: translateX(0); }
+    }
+
+    .success-message.show {
+      display: block;
+    }
+
+    .w-full {
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+<div class="pw">
+  <div class="petals-bg" id="petals"></div>
+
+  <!-- STEP 1: SECRET CODE LOCK -->
+  <div class="screen active" id="s0">
+    <div class="lock-icon">🔒</div>
+    <div class="eyebrow">For Your Eyes Only</div>
+    <h1 class="big-title">Secret Access</h1>
+    <p class="subtitle">Enter the secret code to unlock this moment, Laila.</p>
+    <input type="text" id="code-input" class="code-input" placeholder="Enter Code..." maxlength="10">
+    <div id="code-error" class="code-error">❌ Incorrect code. Hint: Check your messages 😉</div>
+    <button class="unlock-btn" onclick="checkCode()">Unlock 🔑</button>
+  </div>
+
+  <!-- STEP 2: SEALED LETTER -->
+  <div class="screen" id="s1">
+    <div class="eyebrow">A Special Message</div>
+    <h1 class="big-title">Laila's Letter</h1>
+    <p class="subtitle">A note sealed just for you...</p>
+    <div class="letter-seal" onclick="openLetter()">
+      <span class="heart">❤️</span>
+      <span class="hint">Click to Open</span>
+    </div>
+    <p class="gentle-note" style="margin-top: 1.5rem;">A private moment waiting inside...</p>
+  </div>
+
+  <!-- STEP 3: READING THE LETTER -->
+  <div class="screen" id="s2">
+    <h1 class="big-title handwritten" style="font-size: 32px; margin-bottom: 2rem;">My Dearest Laila,</h1>
+    <div class="subtitle" style="font-style: italic; margin: 1.5rem 0; font-size: 15px; line-height: 1.9;">
+      <p>From the moment I met you, every day has felt like a gift. I want to spend every single one of them with you.</p>
+      <p style="margin-top: 1rem;">(sorry, not anymore cause i just realised you a witch 🔮)</p>
+      <p style="margin-top: 1rem; color: #5c1a35; font-weight: 500;">But seriously... I want this to be real with you. No pressure. Just me, honestly asking if you'd give us a real chance together.</p>
+    </div>
+    <button class="submit-btn" onclick="go('s3')">Continue Reading 💌</button>
+  </div>
+
+  <!-- STEP 4: THE PROPOSAL QUESTION -->
+  <div class="screen" id="s3">
+    <div class="ring-icon">💍</div>
+    <h1 class="big-title">Will you be mine, Laila?</h1>
+    <p class="subtitle">Let's build something real together.</p>
+    <div class="btn-row">
+      <button class="btn-yes" onclick="chooseAnswer(true)">Yes, absolutely! 💖</button>
+      <button class="btn-maybe" onclick="chooseAnswer(false)">I need time... 🌸</button>
+    </div>
+    <p class="sig">— with all my heart —</p>
+  </div>
+
+  <!-- STEP 5: CAPTURE HER RESPONSE -->
+  <div class="screen" id="s4">
+    <div class="hearts-rain" id="hearts"></div>
+    <button class="back-btn" onclick="go('s3')">← Go back</button>
+    
+    <div id="response-header"></div>
+
+    <form onsubmit="submitResponse(event)" class="w-full">
+      <div style="text-align: left; width: 100%;">
+        <p id="response-label" class="section-label"></p>
+        <textarea id="response-textarea" class="input-field" rows="4" required></textarea>
+      </div>
+      <button type="submit" class="submit-btn" id="submit-response-btn">Send Your Message 💌</button>
+    </form>
+
+    <p id="response-note" class="gentle-note"></p>
+  </div>
+
+  <!-- STEP 6: SECOND CHANCE (IF NO) -->
+  <div class="screen" id="s5">
+    <div style="font-size: 40px; margin-bottom: 1rem;">💭</div>
+    <h1 class="big-title" style="font-size: 26px;">Before we close this...</h1>
+    <p class="subtitle">Thank you for being honest, Laila. Your honesty means everything to me.</p>
+    <p class="gentle-note" style="margin-bottom: 1.5rem;">Would you like to change your mind and explore what happens if you say YES? 💫</p>
+    <button class="btn-yes" onclick="changeMindToYes()" style="margin-right: 10px;">Actually, YES! 💕</button>
+    <button class="btn-maybe" onclick="keepAnswer()">Keep my answer</button>
+  </div>
+
+  <!-- STEP 7: FINAL CONFIRMATION -->
+  <div class="screen" id="s6">
+    <div id="final-emoji" style="font-size: 60px; margin-bottom: 1rem;"></div>
+    <h1 class="big-title" id="final-title"></h1>
+    <p id="final-message" class="subtitle"></p>
+    <button class="back-btn center-back" onclick="go('s0')">← Start Over</button>
+  </div>
+
+</div>
+
+<!-- SUCCESS NOTIFICATION -->
+<div id="success-notif" class="success-message">
+  ✓ Message received! I'll see it soon 💕
+</div>
+
+<script>
+  const CORRECT_CODE = "LAILA2026";
+    const VALID_CODES = ["LAILA2026", "2026LAILA", "26LAILA", "LAILA26"]; // Accept variations
+    let userChoice = null;
+    let codeAttempts = 0;
+    const codeHints = [
+      "❌ Incorrect. Hint: Think of something important to us...",
+      "❌ Try again. Hint: It might be a name and a year...",
+      "❌ Getting close? Hint: Your name + 2026...",
+      "❌ Almost there! Hint: What year is it? And whose name?",
+      "❌ Try different orders maybe? Like year + name or name + year...",
+      "🔑 Okay, here's a big hint: L_I_A202_ (Fill in the blanks!)"
+    ];
+  const EMOJI_SET = ['💕','💖','💗','✨','🌸','💍','🎉'];
+
+  function initPetals() {
+    const pb = document.getElementById('petals');
+    for(let i = 0; i < 20; i++) {
+      const p = document.createElement('div');
+      p.className = 'petal';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.animationDuration = (4 + Math.random() * 5) + 's';
+      p.style.animationDelay = (Math.random() * 7) + 's';
+      const sz = (5 + Math.random() * 8) + 'px';
+      p.style.width = sz;
+      p.style.height = sz;
+      p.style.background = PETAL_COLORS[Math.floor(Math.random() * PETAL_COLORS.length)];
+      pb.appendChild(p);
+    }
+  }
+
+  // ===== NAVIGATION =====
+  function go(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  // ===== STEP 1: CODE CHECK =====
+  function checkCode() {
+    const input = document.getElementById('code-input').value.trim().toUpperCase();
+    const errorMsg = document.getElementById('code-error');
+    
+    if (VALID_CODES.includes(input)) {
+      errorMsg.classList.remove('show');
+      codeAttempts = 0;
+      go('s1');
+    } else {
+      errorMsg.classList.add('show');
+      errorMsg.innerText = codeHints[Math.min(codeAttempts, codeHints.length - 1)];
+      codeAttempts++;
+    }
+  }
+
+  document.getElementById('code-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') checkCode();
+  });
+
+  // ===== STEP 2: OPEN LETTER =====
+  function openLetter() {
+    const seal = document.querySelector('.letter-seal');
+    seal.classList.add('opening');
+    setTimeout(() => go('s2'), 600);
+  }
+
+  // ===== STEP 4: CHOOSE YES/NO =====
+  function chooseAnswer(isYes) {
+    userChoice = isYes;
+    go('s4');
+
+    const header = document.getElementById('response-header');
+    const label = document.getElementById('response-label');
+    const textarea = document.getElementById('response-textarea');
+    const note = document.getElementById('response-note');
+
+    if (isYes) {
+      // TRIGGER CONFETTI 🎉
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#ff69b4', '#ff1493', '#ffd700', '#ff69b4']
+      });
+      
+      // TRIGGER HEARTS RAIN
+      const h = document.getElementById('hearts');
+      h.innerHTML = '';
+      for(let i = 0; i < 24; i++) {
+        setTimeout(() => {
+          const el = document.createElement('div');
+          el.className = 'heart-p';
+          el.textContent = EMOJI_SET[Math.floor(Math.random() * EMOJI_SET.length)];
+          el.style.left = Math.random() * 90 + '%';
+          el.style.bottom = '0';
+          el.style.animationDelay = (Math.random() * 0.6) + 's';
+          h.appendChild(el);
+          setTimeout(() => el.remove(), 3000);
+        }, i * 70);
+      }
+
+      header.innerHTML = `<div style="font-size:38px; margin-bottom:0.5rem; animation: pulse 0.8s ease-in-out infinite;">🎉💕🌸</div><div class="badge">You said yes to forever with me 💬</div>`;
+      header.innerHTML += `<h1 class="big-title handwritten" style="margin-top: 1rem; font-size: 28px;">Laila, you've just<br><em>made me the happiest.</em></h1>`;
+      label.innerText = "What made you say yes?";
+      textarea.placeholder = "Your honest feelings about this moment...";
+      note.innerText = "Your words mean everything to me. 💕";
+    } else {
+      header.innerHTML = `<div style="font-size:40px; margin-bottom:0.5rem;">🌸</div>`;
+      header.innerHTML += `<h1 class="big-title" style="font-size:27px; margin-top: 1rem;"><em>Your honesty<br>means everything.</em></h1>`;
+      label.innerText = "What's really going on in your heart?";
+      textarea.placeholder = "Take your time... Tell me what you're feeling...";
+      note.innerText = "This is just between us. Your words matter. 🌿";
+    }
+  }
+
+  // ===== STEP 5: SUBMIT RESPONSE =====
+  function submitResponse(e) {
+    e.preventDefault();
+    const response = document.getElementById('response-textarea').value;
+    const btn = document.getElementById('submit-response-btn');
+
+    // Send to backend
+    btn.disabled = true;
+    btn.innerText = "Sending...";
+
+    // Use FormSubmit.co (free, no setup needed)
+    const formData = new FormData();
+    formData.append("_captcha", "false");
+    formData.append("Laila's Answer", userChoice ? "YES ✨" : "NO (Thinking)");
+    formData.append("Her Message", response);
+    formData.append("Timestamp", new Date().toLocaleString());
+    
+    fetch('https://formsubmit.co/ajax/abdulillah690@gmail.com', {
+      method: 'POST',
+      body: formData
+    })
+    .then(() => {
+      showSuccess();
+      setTimeout(() => {
+        if (userChoice) {
+          showFinalScreen(true);
+        } else {
+          go('s5');
+        }
+      }, 1500);
+    })
+    .catch(err => {
+      console.log(err);
+      alert('Message saved locally, but could not send. Please check your email configuration.');
+      if (userChoice) {
+        showFinalScreen(true);
+      } else {
+        go('s5');
+      }
+    });
+  }
+
+  function showSuccess() {
+    const notif = document.getElementById('success-notif');
+    notif.classList.add('show');
+    setTimeout(() => notif.classList.remove('show'), 3000);
+  }
+
+  // ===== STEP 6: SECOND CHANCE =====
+  function changeMindToYes() {
+    userChoice = true;
+    go('s4');
+    chooseAnswer(true);
+  }
+
+  function keepAnswer() {
+    showFinalScreen(false);
+  }
+
+  // ===== STEP 7: FINAL SCREEN =====
+  function showFinalScreen(isYes) {
+    const emoji = document.getElementById('final-emoji');
+    const title = document.getElementById('final-title');
+    const msg = document.getElementById('final-message');
+
+    go('s6');
+
+    if (isYes) {
+      emoji.innerText = "💖✨🥂";
+      title.innerText = "We're Official! 🥰";
+      title.style.color = "#10b981";
+      msg.innerText = "Your beautiful words have been saved in my heart. I can't wait to see you and talk about everything. You just made my entire year!";
+    } else {
+      emoji.innerText = "🌸✨";
+      title.innerText = "Thank you, Laila";
+      title.style.color = "#5c1a35";
+      msg.innerText = "I completely respect your thoughts and feelings. Guess I need to work on my charm... or maybe my coding skills made it too easy to say no! 😄 Either way, thank you for being honest with me. We will talk soon. 🌿";
+    }
+  }
+
+  // Initialize
+  document.addEventListener('DOMContentLoaded', initPetals);
+</script>
+
+</body>
+</html>
