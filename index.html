@@ -252,16 +252,6 @@
       border-color: #961f40; 
     }
 
-    .submit-btn.muted { 
-      background-color: #9a6070; 
-      border-color: #9a6070; 
-    }
-
-    .submit-btn.muted:hover { 
-      background-color: #7d4d5c; 
-      border-color: #7d4d5c; 
-    }
-
     .submit-btn:disabled {
       opacity: 0.6;
       cursor: not-allowed;
@@ -379,14 +369,6 @@
       100%{transform:translateY(-80px) scale(1.2);opacity:0} 
     }
 
-    .final-msg { 
-      font-family: 'Playfair Display', serif; 
-      font-size: 19px; 
-      color: #5c1a35; 
-      font-style: italic; 
-      line-height: 1.65; 
-    }
-
     .sig { 
       font-size: 13px; 
       color: #a07080; 
@@ -432,6 +414,16 @@
     .w-full {
       width: 100%;
     }
+
+    .letter-page {
+      transform-origin: left center;
+      transition: transform 0.4s ease, opacity 0.4s ease;
+    }
+
+    .letter-page.flip-out {
+      transform: rotateY(-30deg);
+      opacity: 0;
+    }
   </style>
 </head>
 <body>
@@ -462,15 +454,17 @@
     <p class="gentle-note" style="margin-top: 1.5rem;">A private moment waiting inside...</p>
   </div>
 
-  <!-- STEP 3: READING THE LETTER -->
+  <!-- STEP 3: READING THE LETTER (HALVED PAGES) -->
   <div class="screen" id="s2">
-    <h1 class="big-title handwritten" style="font-size: 32px; margin-bottom: 2rem;">My Dearest Laila,</h1>
-    <div class="subtitle" style="font-style: italic; margin: 1.5rem 0; font-size: 15px; line-height: 1.9;">
-      <p>From the moment I met you, every day has felt like a gift. I want to spend every single one of them with you.</p>
-      <p style="margin-top: 1rem;">(sorry, not anymore cause i just realised you a witch 🔮)</p>
-      <p style="margin-top: 1rem; color: #5c1a35; font-weight: 500;">But seriously... I want this to be real with you. No pressure. Just me, honestly asking if you'd give us a real chance together.</p>
+    <div style="font-size: 11px; color: #a0335a; letter-spacing: 1px; margin-bottom: 1rem; background: #fff0f4; padding: 4px 12px; border-radius: 12px; display: inline-block;">
+      🎵 Playing: <em>Paradise — Maher Zain</em>
     </div>
-    <button class="submit-btn" onclick="go('s3')">Continue Reading 💌</button>
+    <div id="letterPage" class="letter-page">
+      <div id="letter-content" class="subtitle" style="font-style: italic; margin: 1.5rem 0; font-size: 15px; line-height: 1.9;">
+        <!-- PART 1 WILL RENDER HERE ORIGINALLY BY JAVASCRIPT -->
+      </div>
+    </div>
+    <button id="letter-btn" class="submit-btn" onclick="flipToNext()">Continue Reading 💌</button>
   </div>
 
   <!-- STEP 4: THE PROPOSAL QUESTION -->
@@ -518,7 +512,7 @@
     <div id="final-emoji" style="font-size: 60px; margin-bottom: 1rem;"></div>
     <h1 class="big-title" id="final-title"></h1>
     <p id="final-message" class="subtitle"></p>
-    <button class="back-btn center-back" onclick="go('s0')">← Start Over</button>
+    <!-- Removed start over button - keeps experience clean -->
   </div>
 
 </div>
@@ -527,21 +521,41 @@
 <div id="success-notif" class="success-message">
   ✓ Message received! I'll see it soon 💕
 </div>
+<audio id="bg-audio" src="./08 Maher Zain Paradise.mp3" loop></audio>
 
 <script>
-  const CORRECT_CODE = "LAILA2026";
-    const VALID_CODES = ["LAILA2026", "2026LAILA", "26LAILA", "LAILA26"]; // Accept variations
-    let userChoice = null;
-    let codeAttempts = 0;
-    const codeHints = [
-      "❌ Incorrect. Hint: Think of something important to us...",
-      "❌ Try again. Hint: It might be a name and a year...",
-      "❌ Getting close? Hint: Your name + 2026...",
-      "❌ Almost there! Hint: What year is it? And whose name?",
-      "❌ Try different orders maybe? Like year + name or name + year...",
-      "🔑 Okay, here's a big hint: L_I_A202_ (Fill in the blanks!)"
-    ];
+  const VALID_CODES = ["LAILA2026", "2026LAILA", "26LAILA", "LAILA26"]; 
+  let userChoice = null;
+  let codeAttempts = 0;
+  
+  // Letter Step tracking
+  let currentLetterPart = 1;
+
+  const letterPart1 = `
+    <p>From the moment I met you, it’s like life just became a bit more interesting in a quiet way.</p>
+    <p style="margin-top: 1rem;">I’m not going to overthink this or try sound like something I’m not… I just genuinely like you.</p>
+    <p style="margin-top: 1rem;">You’ve got that calm energy, a bit mysterious too. And me being me, I always end up trying to understand people properly — like what’s really behind the surface.</p>
+    <p style="margin-top: 1rem;">You’re kind of like a puzzle I don’t mind taking my time with… not to “solve” you, but to actually understand you.</p>
+  `;
+
+  const letterPart2 = `
+    <p>And honestly, I see similarities between us too. Just that I’m probably a bit more chaotic 😂 but still on the same wavelength in some ways.</p>
+    <p style="margin-top: 1rem;">What I also respect a lot is how serious you are about your deen. That’s not something I overlook — it actually matters a lot.</p>
+    <p style="margin-top: 1rem;">I think that’s part of why I’m even writing this properly instead of just leaving things unsaid.</p>
+    <p style="margin-top: 1rem; color: #5c1a35; font-weight: 500;">At the end of the day, I’m not trying to rush anything or force an answer. I just wanted to be honest about how I feel and see if you’d be open to something real, step by step.</p>
+  `;
+
+  const codeHints = [
+    "❌ Incorrect. Hint: Think of something important to us...",
+    "❌ Try again. Hint: It might be a name and a year...",
+    "❌ Getting close? Hint: Your name + 2026...",
+    "❌ Almost there! Hint: What year is it? And whose name?",
+    "❌ Try different orders maybe? Like year + name or name + year...",
+    "🔑 Okay, here's a big hint: L_I_A202_ (Fill in the blanks!)"
+  ];
+  
   const EMOJI_SET = ['💕','💖','💗','✨','🌸','💍','🎉'];
+  const PETAL_COLORS = ['#ffd6e0','#ffc0d3','#ffb3c6','#ff9fb3','#ff8aa1','#ff7a93'];
 
   function initPetals() {
     const pb = document.getElementById('petals');
@@ -573,6 +587,20 @@
     if (VALID_CODES.includes(input)) {
       errorMsg.classList.remove('show');
       codeAttempts = 0;
+
+      const audio = document.getElementById("bg-audio");
+      if (audio) {
+        audio.load();
+        audio.currentTime = 0;
+        audio.volume = 0.35;
+        audio.play().catch(err => console.log("Audio blocked:", err));
+      }
+
+      // Initialize the letter view to Part 1
+      currentLetterPart = 1;
+      document.getElementById('letter-content').innerHTML = letterPart1;
+      document.getElementById('letter-btn').innerText = "Continue Reading 💌";
+      
       go('s1');
     } else {
       errorMsg.classList.add('show');
@@ -589,7 +617,37 @@
   function openLetter() {
     const seal = document.querySelector('.letter-seal');
     seal.classList.add('opening');
-    setTimeout(() => go('s2'), 600);
+    setTimeout(() => {
+      seal.classList.remove('opening'); // reset element state
+      go('s2');
+    }, 600);
+  }
+
+  // ===== STEP 3: FLIP LOGIC FOR HALVED TEXT =====
+  function flipToNext() {
+    const page = document.getElementById('letterPage');
+    const content = document.getElementById('letter-content');
+    const btn = document.getElementById('letter-btn');
+
+    if (currentLetterPart === 1) {
+      // Transition to part 2
+      page.classList.add('flip-out');
+      
+      setTimeout(() => {
+        content.innerHTML = letterPart2;
+        btn.innerText = "Go to Proposal 💍";
+        currentLetterPart = 2;
+        page.classList.remove('flip-out');
+      }, 400);
+
+    } else {
+      // Already on part 2, now advance to the proposal container
+      page.classList.add('flip-out');
+      setTimeout(() => {
+        page.classList.remove('flip-out');
+        go('s3');
+      }, 400);
+    }
   }
 
   // ===== STEP 4: CHOOSE YES/NO =====
@@ -603,7 +661,6 @@
     const note = document.getElementById('response-note');
 
     if (isYes) {
-      // TRIGGER CONFETTI 🎉
       confetti({
         particleCount: 100,
         spread: 70,
@@ -611,7 +668,6 @@
         colors: ['#ff69b4', '#ff1493', '#ffd700', '#ff69b4']
       });
       
-      // TRIGGER HEARTS RAIN
       const h = document.getElementById('hearts');
       h.innerHTML = '';
       for(let i = 0; i < 24; i++) {
@@ -647,42 +703,49 @@
     const response = document.getElementById('response-textarea').value;
     const btn = document.getElementById('submit-response-btn');
 
-    // Send to backend
     btn.disabled = true;
     btn.innerText = "Sending...";
 
-    // Use FormSubmit.co (free, no setup needed)
-    const formData = new FormData();
-    formData.append("_captcha", "false");
-    formData.append("Laila's Answer", userChoice ? "YES ✨" : "NO (Thinking)");
-    formData.append("Her Message", response);
-    formData.append("Timestamp", new Date().toLocaleString());
-    
-    fetch('https://formsubmit.co/ajax/abdulillah690@gmail.com', {
+    // 1. Construct payload for FormSpark
+    const payload = {
+      _email: "your-email@gmail.com", // ← CHANGE THIS TO YOUR EMAIL
+      _redirect: "false",
+      subject: "A New Message from Laila! 💖",
+      "Laila's Answer": userChoice ? "YES ✨" : "NO (Thinking)",
+      "Her Message": response,
+      Timestamp: new Date().toLocaleString()
+    };
+
+    // 2. Send it to FormSpark
+    fetch('https://submit-form.com/Ldz0ESJsh', {
       method: 'POST',
-      body: formData
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
     })
-    .then(() => {
-      showSuccess();
-      setTimeout(() => {
-        if (userChoice) {
-          showFinalScreen(true);
-        } else {
-          go('s5');
-        }
-      }, 1500);
+    .then(res => {
+      if (res.ok || res.status === 200) {
+        showSuccess();
+        setTimeout(() => {
+          if (userChoice) {
+            showFinalScreen(true);
+          } else {
+            go('s5');
+          }
+        }, 1500);
+      } else {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
     })
     .catch(err => {
-      console.log(err);
-      alert('Message saved locally, but could not send. Please check your email configuration.');
-      if (userChoice) {
-        showFinalScreen(true);
-      } else {
-        go('s5');
-      }
+      console.error("Submission error:", err);
+      alert('Oops! Something went wrong. Please try again.');
+      btn.disabled = false;
+      btn.innerText = "Send Your Message 💌";
     });
   }
-
+  
   function showSuccess() {
     const notif = document.getElementById('success-notif');
     notif.classList.add('show');
@@ -719,10 +782,17 @@
       title.style.color = "#5c1a35";
       msg.innerText = "I completely respect your thoughts and feelings. Guess I need to work on my charm... or maybe my coding skills made it too easy to say no! 😄 Either way, thank you for being honest with me. We will talk soon. 🌿";
     }
+    const audio = document.getElementById("bg-audio");
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
   }
 
-  // Initialize
-  document.addEventListener('DOMContentLoaded', initPetals);
+  // Initialize background petals on load
+  document.addEventListener('DOMContentLoaded', () => {
+    initPetals();
+  });
 </script>
 
 </body>
