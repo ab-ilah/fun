@@ -590,7 +590,6 @@
 
       const audio = document.getElementById("bg-audio");
       if (audio) {
-        audio.load();
         audio.currentTime = 0;
         audio.volume = 0.35;
         audio.play().catch(err => console.log("Audio blocked:", err));
